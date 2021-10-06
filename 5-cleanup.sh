@@ -1,13 +1,11 @@
 #!/bin/bash
+source config.txt
+
 set -eo pipefail
-STACK=blank-python
-if [[ $# -eq 1 ]] ; then
-    STACK=$1
-    echo "Deleting stack $STACK"
-fi
-FUNCTION=$(aws cloudformation describe-stack-resource --stack-name $STACK --logical-resource-id function --query 'StackResourceDetail.PhysicalResourceId' --output text)
-aws cloudformation delete-stack --stack-name $STACK
-echo "Deleted $STACK stack."
+
+FUNCTION=$(aws cloudformation describe-stack-resource --stack-name $STACK_NAME --logical-resource-id function --query 'StackResourceDetail.PhysicalResourceId' --output text)
+aws cloudformation delete-stack --stack-name $STACK_NAME
+echo "Deleted $STACK_NAME stack."
 
 if [ -f bucket-name.txt ]; then
     ARTIFACT_BUCKET=$(cat bucket-name.txt)
