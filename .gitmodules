@@ -1,0 +1,3 @@
+[submodule "lattice-surgery-compiler"]
+	path = lattice-surgery-compiler
+	url = https://github.com/latticesurgery-com/lattice-surgery-compiler

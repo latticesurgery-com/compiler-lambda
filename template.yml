@@ -1,0 +1,145 @@
+AWSTemplateFormatVersion: 2010-09-09
+Transform: 'AWS::Serverless-2016-10-31'
+Description: >-
+  An AWS Lambda application to operate the Lattice Suregery Error Correcting
+  Compiler.
+Resources:
+  CompilerLambda:
+    Type: 'AWS::Serverless::Function'
+    Properties:
+      Handler: lambda_function.lambda_handler
+      Runtime: python3.8
+      CodeUri: function/.
+      Description: Call the AWS Lambda API
+      Timeout: 10
+      Policies:
+        - AWSLambdaBasicExecutionRole
+        - AWSLambda_ReadOnlyAccess
+        - AWSXrayWriteOnlyAccess
+      Tracing: Active
+      Layers:
+        - !Ref CompilerLibs
+  CompilerLibs:
+    Type: 'AWS::Serverless::LayerVersion'
+    Properties:
+      LayerName: blank-python-lib
+      Description: Dependencies for the blank-python sample app.
+      ContentUri: package/.
+      CompatibleRuntimes:
+        - python3.8
+  CompilerApi:
+    Type: 'AWS::ApiGateway::RestApi'
+    Properties:
+      Name: Compiler API
+      Description: API used to compile quantum circuits
+      FailOnWarnings: true
+  LambdaPermission:
+    Type: 'AWS::Lambda::Permission'
+    Properties:
+      Action: 'lambda:invokeFunction'
+      FunctionName: !GetAtt 
+        - CompilerLambda
+        - Arn
+      Principal: apigateway.amazonaws.com
+      SourceArn: !Join 
+        - ''
+        - - 'arn:aws:execute-api:'
+          - !Ref 'AWS::Region'
+          - ':'
+          - !Ref 'AWS::AccountId'
+          - ':'
+          - !Ref CompilerApi
+          - /*
+  CompilerApiStage:
+    DependsOn:
+      - ApiGatewayAccount
+    Type: 'AWS::ApiGateway::Stage'
+    Properties:
+      DeploymentId: !Ref ApiDeployment
+      MethodSettings:
+        - DataTraceEnabled: true
+          HttpMethod: '*'
+          LoggingLevel: INFO
+          ResourcePath: /*
+      RestApiId: !Ref CompilerApi
+      StageName: LATEST
+  ApiGatewayCloudWatchLogsRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - apigateway.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      Policies:
+        - PolicyName: ApiGatewayLogsPolicy
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              - Effect: Allow
+                Action:
+                  - 'logs:CreateLogGroup'
+                  - 'logs:CreateLogStream'
+                  - 'logs:DescribeLogGroups'
+                  - 'logs:DescribeLogStreams'
+                  - 'logs:PutLogEvents'
+                  - 'logs:GetLogEvents'
+                  - 'logs:FilterLogEvents'
+                Resource: '*'
+  ApiGatewayAccount:
+    Type: 'AWS::ApiGateway::Account'
+    Properties:
+      CloudWatchRoleArn: !GetAtt 
+        - ApiGatewayCloudWatchLogsRole
+        - Arn
+  ApiDeployment:
+    Type: 'AWS::ApiGateway::Deployment'
+    DependsOn:
+      - CompilerRequest
+    Properties:
+      RestApiId: !Ref CompilerApi
+      StageName: DummyStage
+  CompilerResource:
+    Type: 'AWS::ApiGateway::Resource'
+    Properties:
+      RestApiId: !Ref CompilerApi
+      ParentId: !GetAtt 
+        - CompilerApi
+        - RootResourceId
+      PathPart: Compiler
+  CompilerRequest:
+    DependsOn: LambdaPermission
+    Type: 'AWS::ApiGateway::Method'
+    Properties:
+      AuthorizationType: NONE
+      HttpMethod: GET
+      Integration:
+        Type: AWS
+        IntegrationHttpMethod: POST
+        Uri: !Join 
+          - ''
+          - - 'arn:aws:apigateway:'
+            - !Ref 'AWS::Region'
+            - ':lambda:path/2015-03-31/functions/'
+            - !GetAtt 
+              - CompilerLambda
+              - Arn
+            - /invocations
+        IntegrationResponses:
+          - StatusCode: 200
+        RequestTemplates:
+          application/json: !Join 
+            - ''
+            - - '{'
+              - '"name": "$input.params(''name'')"'
+              - '}'
+      RequestParameters:
+        method.request.querystring.name: false
+      ResourceId: !Ref CompilerResource
+      RestApiId: !Ref CompilerApi
+      MethodResponses:
+        - StatusCode: 200
