@@ -1,3 +1,5 @@
 {
-    "key1" : "val1"
+  "circuit_source": "str",
+  "circuit": "OPENQASM 2.0;\ninclude \"qelib1.inc\";\n\nqreg q[2];\n\nh q[0];\ncx q[0],q[1];\nh q[0];\nt q[1];\ns q[0];\nx q[0];",
+  "apply_litinski_transform": true
 }
