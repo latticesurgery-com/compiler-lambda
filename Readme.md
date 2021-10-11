@@ -2,7 +2,7 @@
 
 Deploys a lambda containing Python code and sets up an API gateway to call it. Soon this code will be the compiler.
 
-Requires the AWS cli tools with credentials set up and Python 3.8.
+Requires the AWS cli tools with credentials set up, Python 3.9 and pip's `merge-requirements` package with execytable in `$PATH`. Use `git clone --recursive` to clone this repository.
 
 To deploy the first time, run
 ```

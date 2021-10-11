@@ -22,7 +22,7 @@ Resources:
   CompilerLibs:
     Type: 'AWS::Serverless::LayerVersion'
     Properties:
-      LayerName: blank-python-lib
+      LayerName: blank-python-lib # TODO remove blank-python references
       Description: Dependencies for the blank-python sample app.
       ContentUri: package/.
       CompatibleRuntimes:
@@ -110,13 +110,13 @@ Resources:
       ParentId: !GetAtt 
         - CompilerApi
         - RootResourceId
-      PathPart: Compiler
+      PathPart: compile
   CompilerRequest:
     DependsOn: LambdaPermission
     Type: 'AWS::ApiGateway::Method'
     Properties:
       AuthorizationType: NONE
-      HttpMethod: GET
+      HttpMethod: POST
       Integration:
         Type: AWS
         IntegrationHttpMethod: POST
@@ -128,7 +128,7 @@ Resources:
             - !GetAtt 
               - CompilerLambda
               - Arn
-            - /invocations
+            - /compile
         IntegrationResponses:
           - StatusCode: 200
         RequestTemplates:
