@@ -5,12 +5,14 @@ Description: >-
 Parameters:
   EcrRepositoryName:
     Type: 'String'
+  AccountId: # Working around the fact that the implicit parameter AWS::AccountId seems to be broken 
+    Type: 'String'
 Resources:
   CompilerLambda:
     Type: 'AWS::Serverless::Function'
     Properties:
       PackageType: Image
-      ImageUri: !Sub '858562928372.dkr.ecr.${AWS::Region}.amazonaws.com/${EcrRepositoryName}:latest'
+      ImageUri: !Sub '${AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${EcrRepositoryName}:latest'
       Description: Lattice Surgery Compiler Lambda
       Timeout: 10
       Policies:
@@ -37,7 +39,7 @@ Resources:
         - - 'arn:aws:execute-api:'
           - !Ref 'AWS::Region'
           - ':'
-          - '858562928372'
+          - !Ref 'AccountId'
           - ':'
           - !Ref CompilerApi
           - /*

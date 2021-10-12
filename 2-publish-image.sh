@@ -1,29 +1,27 @@
 #!/bin/bash
+source config.txt
 
+docker build -t $IMAGE_NAME .
 
-set -eo pipefail
+REGION=$(aws configure get region)
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
-echo "Updating submodules"
-git submodule update --remote
-echo "Moving the files from the handler and the lattice-surgery-compiler into a single folder"
-rm -rf function
-mkdir function
-cp -r handler/* function
-rm function/requirements.txt
-cp -r lattice-surgery-compiler/* function
-rm function/requirements.txt
-rm -r function/web
-rm -r function/webgui
+aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
 
+CREATED_AT_STR=$(aws ecr describe-repositories --repository-names lattice-surgery-compiler-lambda-ecr | grep createdAt)
 
-if [ package -ot handler/requirements.txt ] || [ package -ot lattice-surgery-compiler/requirements.txt ]; then
-    echo "Creating the layer. This might take some time"
-    merge_requirements  lattice-surgery-compiler/requirements.txt handler/requirements.txt
-    mv requirements-merged.txt function/requirements.txt
-    rm -rf package
-    cd function
-    pip install --target ../package/python -r requirements.txt
-else
-    echo "Using existing layer"
+if [ -z $CREATED_AT_STR ]; then
+
+    aws ecr create-repository --repository-name $ECR_REPOSITORY_NAME --image-scanning-configuration scanOnPush=true --image-tag-mutability MUTABLE
 fi
 
+docker tag  $IMAGE_NAME:latest $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$ECR_REPOSITORY_NAME:latest
+docker push $ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/$ECR_REPOSITORY_NAME:latest
+
+
+LAMBDA_NAME= aws lambda list-functions --output text | grep -o -m 1 lattice-surgery-compiler-lambda-CompilerLambda-[a-zA-Z0-9]* | head  -n 1
+
+if [ ! -z $LAMBDA_NAME ]; then
+    echo "Updating the lambda's function code"
+    ws lambda update-function-code --function-name arn:aws:lambda:$REGION:$ACCOUNT_ID:function:$LAMBDA_NAME
+fi
