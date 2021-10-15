@@ -23,4 +23,4 @@ def lambda_handler(event, context):
     # Currently we are turning the JSON like object to string
     response = json_pipeline.handle(jsonpickle.encode(event))
     
-    return response
+    return response.body
