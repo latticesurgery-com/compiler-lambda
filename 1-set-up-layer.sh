@@ -20,9 +20,11 @@ if [ package -ot handler/requirements.txt ] || [ package -ot lattice-surgery-com
     echo "Creating the layer. This might take some time"
     merge_requirements  lattice-surgery-compiler/requirements.txt handler/requirements.txt
     mv requirements-merged.txt function/requirements.txt
-    rm -rf package
     cd function
-    pip install --target ../package/python -r requirements.txt
+        pip install --target env -r requirements.txt
+        echo "Patching Qiskit"
+        patch -d env -u -i ../../qiskit-disable-default-aer-patch.diff -p 0
+    cd ..
 else
     echo "Using existing layer"
 fi

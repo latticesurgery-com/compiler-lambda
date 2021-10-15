@@ -2,7 +2,6 @@ FROM public.ecr.aws/lambda/python:3.9
 
 # Copy function code
 COPY function ${LAMBDA_TASK_ROOT}
-COPY package/python ${LAMBDA_TASK_ROOT}/env
 ENV PYTHONPATH=${LAMBDA_TASK_ROOT}/env
 
 # Install the function's dependencies using file requirements.txt
