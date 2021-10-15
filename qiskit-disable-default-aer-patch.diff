@@ -1,0 +1,24 @@
+diff -ru qiskit.old/providers/basicaer/__init__.py qiskit/providers/basicaer/__init__.py
+--- qiskit.old/providers/basicaer/__init__.py	2021-10-12 12:04:37.950887815 -0700
++++ qiskit/providers/basicaer/__init__.py	2021-10-12 13:50:02.840041638 -0700
+@@ -62,12 +62,13 @@
+    BasicAerError
+ """
+ 
+-from .basicaerprovider import BasicAerProvider
+-from .basicaerjob import BasicAerJob
+-from .qasm_simulator import QasmSimulatorPy
+-from .statevector_simulator import StatevectorSimulatorPy
+-from .unitary_simulator import UnitarySimulatorPy
+-from .exceptions import BasicAerError
++#from .basicaerprovider import BasicAerProvider
++#from .basicaerjob import BasicAerJob
++#from .qasm_simulator import QasmSimulatorPy
++#from .statevector_simulator import StatevectorSimulatorPy
++#from .unitary_simulator import UnitarySimulatorPy
++#from .exceptions import BasicAerError
+ 
+ # Global instance to be used as the entry point for convenience.
+-BasicAer = BasicAerProvider()  # pylint: disable=invalid-name
++#BasicAer = BasicAerProvider()  # pylint: disable=invalid-name
++BasicAer = None # disable to avoid calling multiprocessing
