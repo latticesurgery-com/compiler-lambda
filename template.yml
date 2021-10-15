@@ -14,7 +14,8 @@ Resources:
       PackageType: Image
       ImageUri: !Sub '${AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${EcrRepositoryName}:latest'
       Description: Lattice Surgery Compiler Lambda
-      Timeout: 10
+      Timeout: 20
+      MemorySize: 256
       Policies:
         - AWSLambdaBasicExecutionRole
         - AWSLambda_ReadOnlyAccess
@@ -124,14 +125,6 @@ Resources:
             - /invocations
         IntegrationResponses:
           - StatusCode: 200
-        RequestTemplates:
-          application/json: !Join 
-            - ''
-            - - '{'
-              - '"name": "$input.params(''name'')"'
-              - '}'
-      RequestParameters:
-        method.request.querystring.name: false
       ResourceId: !Ref CompilerResource
       RestApiId: !Ref CompilerApi
       MethodResponses:
