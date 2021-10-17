@@ -1,8 +1,21 @@
-### Lattice Surgery Compiler Serverless Deployment
+## Lattice Surgery Compiler's API Service
 
 [![Unitary Fund](https://img.shields.io/badge/Supported%20By-UNITARY%20FUND-brightgreen.svg?style=for-the-badge)](http://unitary.fund)
 
-Sets up a [serverless stack](https://aws.amazon.com/serverless/) to deploy [Lattice Surgery Error Correcting Compiler](https://github.com/latticesurgery-com/lattice-surgery-compiler) as service.
+Sets up a [serverless stack](https://aws.amazon.com/serverless/) to deploy [Lattice Surgery Error Correcting Compiler](https://github.com/latticesurgery-com/lattice-surgery-compiler) as service at `api.latticesurgery.com`.
+
+### How to use
+
+Send post requests to `https://api.latticesurgery.com/compile`. **Example** with cURL:
+```
+curl -X POST https://api.latticesurgery.com/compile -d"{\"circuit_source\":\"str\",\"circuit\":\"OPENQASM 2.0;\\ninclude \\\"qelib1.inc\\\";\\n\\nqreg q[2];\\n\\nh q[0];\\ncx q[0],q[1];\\nh q[0];\\nt q[1];\\ns q[0];\\nx q[0];\",\"apply_litinski_transform\":true}"
+```
+
+The input and output are specified in the [compiler's pipeline](https://github.com/latticesurgery-com/lattice-surgery-compiler/blob/a7208d1efe9229fd4b17ffb19ea1fcfa71c18b3f/webapi/json_pipeline.py#L33).
+
+If you are developing [lattice-surgery-compiler](https://github.com/latticesurgery-com/lattice-surgery-compiler) on your local machine, ignore this repo and use [the local development server](https://github.com/latticesurgery-com/lattice-surgery-compiler/blob/master/webapi/local_compiler_api_server.py) instead.
+
+### Set Up
 
 #### Dependecies
  * Python 3.9
@@ -27,7 +40,7 @@ Also, Qiskit won't build on 32 bit machines.
 The serverless stack consists of:
  * An AWS Lambda containing the compiler. This lambda is deployed as a Docker image.
  * An ECS repository to hold the Docker images that
- * An API Gateway to interface the lambda with HTTP calls from the outside world
+ * An API Gateway to interface the lambda with HTTPS calls from the outside world
  * Configuration for logging and moitoring.
  
 The Lambda, the API Gateway and the extra Configuration is controlled by the `template.yml` and managed with the numbered shell scripts, whereas the ECS repository is managed directly by the shell scripts.
