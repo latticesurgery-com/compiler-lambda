@@ -68,9 +68,10 @@ Before getting started make sure you have an AWS account set up with the followi
  3. `3-deploy-stack.sh` creates/deploys with CloudFormation the serverless (SAM) stack consisting of Lambda, API Gateway and logging, as defined in the `template.yml` file.
  
 After the whole stack is set up, to make the API public go to the AWS console and:
- 1. Create and API Gateway stage.
- 2. Create a subdomain endpoint for that API stage. Might have to set up certificates for it.
- 3. Go to Route 53 and point the domain to the API endpoint
+ 1. Enable CORS on all the api's paths (such as compile), from the actions menu
+ 2. Deploy the API to a deployment stage. If there isn't one create one from the Stages menu first.
+ 3. Create a subdomain endpoint for that API's deployment stage. Might have to set up certificates for it.
+ 4. Go to Route 53 and point the domain to the API endpoint
  
 
 Requires the AWS cli tools with credentials set up, Python 3.9 and pip's `merge-requirements` package with executable in `$PATH`. Use `git clone --recursive` to clone this repository.
